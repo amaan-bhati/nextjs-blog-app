@@ -14,7 +14,7 @@ const AboutCoverSection = () => {
         </div>
 
         <div className='w-full md:w-1/2 flex flex-col text-left items-start justify-center px-5 xs:p-10 pb-10 lg:px-16'>
-            <h2 className='font-bold  text-4xl xs:text-5xl sxl:text-6xl  text-center lg:text-left'>
+            <h2 className='font-semi-bold  text-4xl xs:text-5xl sxl:text-6xl  text-center lg:text-left'>
             More about me at <a href='https://amaanbhati.tech'> amaanbhati.tech </a>
             </h2>
             <p className='font-medium mt-4 text-bold'>
