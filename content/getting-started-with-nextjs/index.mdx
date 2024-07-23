@@ -9,42 +9,79 @@ isPublished: true
 tags:
 - growth
 ---
-
-# Getting Started with Next.js
-
-Next.js is a powerful React framework that enables you to build server-side rendered (SSR) and static web applications. This guide will walk you through the basics of getting started with Next.js, from installation to creating your first page.
+# Getting Started with Next.js: A Comprehensive Guide
 
 ## Table of Contents
 
 1. [Introduction to Next.js](#introduction-to-nextjs)
+   - What is Next.js?
+   - Key features and benefits
+
 2. [Setting Up Your Development Environment](#setting-up-your-development-environment)
-   - [Installing Node.js](#installing-nodejs)
-   - [Creating a New Next.js Project](#creating-a-new-nextjs-project)
-3. [Understanding the File Structure](#understanding-the-file-structure)
-   - [Pages Directory](#pages-directory)
-   - [Static and Dynamic Routing](#static-and-dynamic-routing)
-4. [Creating Your First Page](#creating-your-first-page)
-5. [Styling Your Application](#styling-your-application)
-   - [CSS Modules](#css-modules)
-   - [Styled JSX](#styled-jsx)
-   - [Global Styles](#global-styles)
-6. [Fetching Data](#fetching-data)
-   - [getStaticProps](#getstaticprops)
-   - [getServerSideProps](#getserversideprops)
-   - [API Routes](#api-routes)
-7. [Deploying Your Application](#deploying-your-application)
+   - Installing Node.js and npm
+   - Creating a new Next.js project
+
+3. [Next.js Project Structure](#nextjs-project-structure)
+   - Understanding the folder structure
+   - Key files and their purposes
+
+4. [Pages and Routing](#pages-and-routing)
+   - Creating pages
+   - File-based routing
+   - Dynamic routes
+
+5. [Components and Layouts](#components-and-layouts)
+   - Creating reusable components
+   - Implementing layouts
+
+6. [Styling in Next.js](#styling-in-nextjs)
+   - CSS Modules
+   - Global styles
+   - CSS-in-JS solutions
+
+7. [Data Fetching](#data-fetching)
+   - getStaticProps
+   - getServerSideProps
+   - API Routes
+
+8. [Image Optimization](#image-optimization)
+   - Using the Image component
+   - Customizing image loading
+
+9. [Deployment](#deployment)
+   - Deploying to Vercel
+   - Other deployment options
+
+10. [Advanced Topics](#advanced-topics)
+    - Custom App and Document
+    - Internationalization
+    - TypeScript support
 
 ## Introduction to Next.js
 
-Next.js is a React framework developed by Vercel that allows for server-side rendering and static site generation, providing a seamless developer experience and improved performance. It comes with built-in features like API routes, automatic code splitting, and static site generation.
+### What is Next.js?
+
+Next.js is a popular React framework that enables you to build server-side rendered and statically generated web applications. It provides a powerful set of features out of the box, making it easier for developers to create fast, scalable, and SEO-friendly web applications.
+
+### Key features and benefits
+
+- Server-side rendering (SSR)
+- Static site generation (SSG)
+- Automatic code splitting
+- Built-in CSS support
+- API routes
+- Image optimization
+- Fast refresh for development
+- TypeScript support
 
 ## Setting Up Your Development Environment
 
-### Installing Node.js
+### Installing Node.js and npm
 
-To get started with Next.js, you need to have Node.js installed on your machine. You can download and install it from the [official Node.js website](https://nodejs.org/).
+Before getting started with Next.js, ensure you have Node.js and npm (Node Package Manager) installed on your system. You can download and install them from the official Node.js website: [https://nodejs.org](https://nodejs.org)
 
-To verify that Node.js is installed, run the following command in your terminal:
+To verify your installation, open a terminal and run:
 
 ```bash
-node -v
+node --version
+npm --version
