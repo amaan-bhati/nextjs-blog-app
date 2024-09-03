@@ -4,14 +4,12 @@ const insights = [
   "Hey everyone, I'm Amaan",
   "Professional Web Developer",
   "Aspiring Software Developer",
-
   "2+ Years experience in Web development",
   "Web Dev Lead at MLSAKIIT",
   "Key Skills: Reactjs/Nextjs",
   "Tech Enthusiast",
   "Public Speaker",
   "Tech Events and Conferences ",
-  
 ];
 
 export default function AboutLayout({ children }) {
