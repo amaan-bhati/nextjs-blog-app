@@ -7,18 +7,15 @@ updatedAt: "2024-09-15"
 author: "amaanbhati"
 isPublished: true
 tags:
-- mapbox
-- navigation
-- AI
+- Web-3
 - Tools
-- EV
-- UX
+- AI
 ---
 
 # Mapbox AI Navigation SDK: Revolutionizing Smart Routing and User Experience
 
 
-I the modern dev world! Where every other day, someone's slapping an "AI-powered" label on their coffee maker. It's like we're all competing in the "Who Can Shove AI Into the Most Unnecessary Places" Olympics. But hold onto your neural networks, folks, because Mapbox has actually done something that makes us sit up and say, "Hey, that AI thing? It actually makes sense here!".
+In the modern dev world! Where every other day, someone's slapping an "AI-powered" label on their coffee maker. It's like we're all competing in the "Who Can Shove AI Into the Most Unnecessary Places" Olympics. But hold onto your neural networks, folks, because Mapbox has actually done something that makes us sit up and say, "Hey, that AI thing? It actually makes sense here!".
 Today, we're taking a deep dive into one of their most groundbreaking offerings: the Mapbox AI Navigation SDK. This powerful tool is not just improving navigation; it's completely transforming how developers approach routing and user experience in their applications.
 
 > Before we delve into the AI Navigation SDK, if you're new to Mapbox or want a refresher on its core features, check out my previous blog post on [Mapbox Fundamentals](https://blog.amaanbhati.tech/blogs/mapbox-doing-wonders) or [visit the official Mapbox website](https://www.mapbox.com/). It provides a solid foundation for understanding Mapbox's capabilities. 
@@ -309,7 +306,231 @@ The Mapbox AI Navigation SDK leverages a sophisticated blend of machine learning
 
 5. **User Interaction**: The SDK processes user interactions, both explicit (like searches) and implicit (like frequent destinations), to continually refine its understanding and improve personalization.
 
-## Implementing Mapbox AI Navigation SDK
+## Implementing Mapbox AI Navigation SDK in a Next.js Application
 
-While the specifics of implementation can vary based on your project needs, here's a basic example of how you might initialize the SDK in a JavaScript application:
+Let's walk through the complete process of integrating the Mapbox AI Navigation SDK into a Next.js application from scratch:
+
+1. **Set up your Next.js project**:
+   First, create a new Next.js project:
+
+   ```bash
+   npx create-next-app@latest mapbox-ai-navigation-demo
+   cd mapbox-ai-navigation-demo
+   ```
+
+   Choose the following options during setup:
+   - TypeScript: Yes
+   - ESLint: Yes
+   - Tailwind CSS: No (for simplicity)
+   - `src/` directory: No
+   - App Router: Yes
+   - Import alias: No
+
+2. **Install dependencies**:
+   Install the necessary packages:
+
+   ```bash
+   npm install mapbox-gl @mapbox/mapbox-gl-directions
+   ```
+
+3. **Create environment variables**:
+   Create a `.env.local` file in the root of your project:
+
+   ```
+   NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token_here
+   ```
+
+   Replace `your_mapbox_access_token_here` with your actual Mapbox access token.
+
+4. **Update `app/layout.tsx`**:
+   Add the Mapbox GL CSS to the layout:
+
+   ```tsx
+   import './globals.css'
+   import type { Metadata } from 'next'
+   import { Inter } from 'next/font/google'
+
+   const inter = Inter({ subsets: ['latin'] })
+
+   export const metadata: Metadata = {
+     title: 'Mapbox AI Navigation Demo',
+     description: 'A demo of Mapbox AI Navigation in Next.js',
+   }
+
+   export default function RootLayout({
+     children,
+   }: {
+     children: React.ReactNode
+   }) {
+     return (
+       <html lang="en">
+         <head>
+           <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+         </head>
+         <body className={inter.className}>{children}</body>
+       </html>
+     )
+   }
+   ```
+
+5. **Create a Map component**:
+   Create a new file `app/components/Map.tsx`:
+
+   ```tsx
+   'use client'
+
+   import { useEffect, useRef, useState } from 'react'
+   import mapboxgl from 'mapbox-gl'
+   import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions'
+
+   mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
+
+   export default function Map() {
+     const mapContainer = useRef<HTMLDivElement>(null)
+     const map = useRef<mapboxgl.Map | null>(null)
+     const [lng, setLng] = useState(-74.5)
+     const [lat, setLat] = useState(40)
+     const [zoom, setZoom] = useState(9)
+
+     useEffect(() => {
+       if (map.current) return // initialize map only once
+       map.current = new mapboxgl.Map({
+         container: mapContainer.current!,
+         style: 'mapbox://styles/mapbox/streets-v11',
+         center: [lng, lat],
+         zoom: zoom
+       })
+
+       const directions = new MapboxDirections({
+         accessToken: mapboxgl.accessToken,
+         unit: 'metric',
+         profile: 'mapbox/driving'
+       })
+
+       map.current.addControl(directions, 'top-left')
+
+       map.current.on('move', () => {
+         setLng(parseFloat(map.current!.getCenter().lng.toFixed(4)))
+         setLat(parseFloat(map.current!.getCenter().lat.toFixed(4)))
+         setZoom(parseFloat(map.current!.getZoom().toFixed(2)))
+       })
+
+       map.current.on('load', () => {
+         console.log('Map loaded and ready for AI navigation features')
+       })
+     }, [])
+
+     return (
+       <div>
+         <div className="sidebar">
+           Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+         </div>
+         <div ref={mapContainer} className="map-container" style={{ height: '100vh' }} />
+       </div>
+     )
+   }
+   ```
+
+6. **Update `app/page.tsx`**:
+   Replace the content of `app/page.tsx` with:
+
+   ```tsx
+   import dynamic from 'next/dynamic'
+
+   const Map = dynamic(() => import('./components/Map'), {
+     loading: () => <p>Loading map...</p>,
+     ssr: false
+   })
+
+   export default function Home() {
+     return (
+       <main>
+         <Map />
+       </main>
+     )
+   }
+   ```
+
+7. **Implement AI features**:
+   Add a new file `app/utils/mapboxAI.ts`:
+
+   ```typescript
+   export async function calculateSmartRange(origin: [number, number], destination: [number, number]) {
+     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${origin[0]},${origin[1]};${destination[0]},${destination[1]}`;
+     const params = new URLSearchParams({
+       access_token: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!,
+       geometries: 'geojson',
+       overview: 'full',
+       steps: 'true',
+       annotations: 'duration,distance,speed'
+     });
+
+     try {
+       const response = await fetch(`${url}?${params}`);
+       const data = await response.json();
+       
+       const route = data.routes[0];
+       const distance = route.distance; // in meters
+       const duration = route.duration; // in seconds
+       
+       console.log(`Total distance: ${distance / 1000} km`);
+       console.log(`Estimated duration: ${duration / 60} minutes`);
+       
+       // Simple estimation, adjust as needed
+       const estimatedRange = distance * 1.2;
+       
+       console.log(`Estimated range needed: ${estimatedRange / 1000} km`);
+       
+       return estimatedRange;
+     } catch (error) {
+       console.error('Error calculating smart range:', error);
+       throw error;
+     }
+   }
+   ```
+
+8. **Update Map component to use AI features**:
+   Modify `app/components/Map.tsx` to include the smart range calculation:
+
+   ```tsx
+   // ... (previous imports)
+   import { calculateSmartRange } from '../utils/mapboxAI'
+
+   export default function Map() {
+     // ... (previous code)
+
+     useEffect(() => {
+       // ... (previous code)
+
+       map.current.on('load', () => {
+         console.log('Map loaded and ready for AI navigation features')
+
+         // @ts-ignore (TypeScript doesn't recognize the 'on' method for MapboxDirections)
+         directions.on('route', (e: any) => {
+           const origin = e.route[0].legs[0].steps[0].maneuver.location;
+           const destination = e.route[0].legs[0].steps[e.route[0].legs[0].steps.length - 1].maneuver.location;
+           
+           calculateSmartRange(origin, destination)
+             .then(range => console.log(`Smart range calculation complete. Estimated range: ${range / 1000} km`))
+             .catch(error => console.error('Error in smart range calculation:', error));
+         });
+       })
+     }, [])
+
+     // ... (rest of the component)
+   }
+   ```
+
+9. **Run your application**:
+   Start your Next.js development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Then open your browser and navigate to `http://localhost:3000`.
+
+This setup provides a basic implementation of the Mapbox AI Navigation SDK with a smart range feature in a Next.js application. The map will be displayed on the page, and you can use the directions control to plot routes. When a route is calculated, the smart range estimation will be logged to the console.
+
+Remember that full AI capabilities might require additional API calls and more complex logic depending on your specific use case. Always refer to the latest Mapbox documentation for the most up-to-date implementation details and available features.
 
