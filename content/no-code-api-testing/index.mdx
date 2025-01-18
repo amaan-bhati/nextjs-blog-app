@@ -342,7 +342,7 @@ For the entire application, use `--test-dir` instead of `--test-file-path`.
 
 #### Example
 
-Consider an <a href="https://github.com/keploy/samples-typescript/tree/main/express-mongoose" target="_blank">Express-Mongoose</a> sample application with Jest test cases under the `test` folder named `routes.test.js`. Modify the `package.json`:
+Consider an Express-Mongoose sample application with Jest test cases under the `test` folder named `routes.test.js`. Modify the `package.json`:
 
 ```json
 "jest": {
@@ -363,12 +363,7 @@ keploy gen \
 ```
 
 We will get the following output:
-<Image 
-    src="/blogs/keploy-testcase-generation-1.png"
-    alt="Keploy test case generation"
-    width={800}
-    height={400}
-/>
+
 
 ```plaintext
 Keploy test coverage with AI-generated unit tests for Express-Mongoose
@@ -397,7 +392,7 @@ keploy gen --source-file-path="<path to source file>" \
 
 For the entire application, use `--test-dir` instead of `--test-file-path`.
 
-⚠️ **Warning:** Running the command with `--test-dir` will generate unit tests for all files in the application. Depending on the size of the codebase, this process may take between 20 minutes to an hour and will incur costs related to LLM usage.
+> ⚠️ **Warning:** Running the command with `--test-dir` will generate unit tests for all files in the application. Depending on the size of the codebase, this process may take between 20 minutes to an hour and will incur costs related to LLM usage.
 
 #### Example
 
