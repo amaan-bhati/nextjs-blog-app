@@ -1,0 +1,432 @@
+---
+title: "No Cde API testing"
+description: " Automate unit test generation with Keploy's UTG, leveraging Meta LLM research to boost test coverage and improve edge cases."
+image: "../../public/blogs/art-banner.jpg"
+publishedAt: "2025-01-13"
+updatedAt: "2025-01-13"
+author: "amaanbhati"
+isPublished: true
+tags:
+- api
+- tools
+- api-testing
+- development-tools
+- no-code-api-testing
+- productivity
+---
+---
+
+# No-Code API Testing with Keploy
+
+In today’s fast-paced development landscape, the ability to test APIs without writing extensive code can save significant time and effort. **Keploy** is a no-code API testing platform that simplifies the testing process by automatically generating test cases and mocks. Let’s dive into how Keploy works, its benefits, and how to integrate it into your projects.
+
+## What is Keploy?
+
+Keploy is an open-source tool designed to make API testing effortless. It uses **eBPF** to intercept API calls at the network layer and automatically generates test cases and mocks. This ensures comprehensive test coverage without the need for manual coding.
+
+### How Keploy Works
+
+1. **API Call Interception**: Keploy captures API calls and responses in real-time.
+2. **Test Case Generation**: It converts these interactions into test cases, including mocks and stubs.
+3. **Regression Testing**: Keploy replays the captured test cases to detect regressions in your API.
+
+### Time-Saving Benefits
+
+- **No Manual Test Writing**: Keploy automates the creation of test cases, saving hours of manual effort.
+- **Faster Debugging**: Identifying regressions becomes quicker with automated testing.
+- **Seamless Integration**: Works with modern applications and frameworks, ensuring minimal setup time.
+
+---
+
+## Keploy Installation
+
+### Platform-Specific Requirements
+
+Below is a summary of the tools needed for both native and Docker installations of Keploy on different platforms:
+
+<table>
+  <thead>
+    <tr>
+      <th>Operating System</th>
+      <th>Without Docker</th>
+      <th>Docker Installation</th>
+      <th>Prerequisites</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🍎 MacOS</td>
+      <td style={{ textAlign: "center", color: "red" }}>❌</td>
+      <td style={{ textAlign: "center", color: "green" }}>✔️</td>
+      <td>
+        - Docker Desktop version must be 4.25.2 or above <br />
+        - For running Keploy on MacOS natively, refer to <a href="https://keploy.github.io" target="_blank">Guide</a>
+      </td>
+    </tr>
+    <tr>
+      <td>🪟 Windows</td>
+      <td style={{ textAlign: "center", color: "green" }}>✔️</td>
+      <td style={{ textAlign: "center", color: "green" }}>✔️</td>
+      <td>
+        - Use <a href="https://learn.microsoft.com/en-us/windows/wsl/install#install-wsl-command" target="_blank">WSL</a> : <code>wsl --install</code> <br />
+        - Windows 10 version 2004 and higher (Build 19041 and higher) or Windows 11
+      </td>
+    </tr>
+    <tr>
+      <td>🐧 Linux</td>
+      <td style={{ textAlign: "center", color: "green" }}>✔️</td>
+      <td style={{ textAlign: "center", color: "green" }}>✔️</td>
+      <td>Linux kernel 5.15 or higher</td>
+    </tr>
+  </tbody>
+</table>
+
+### Quick Installation Using CLI
+
+To get started, set up the Keploy alias using this command:
+
+```bash
+curl --silent -O -L https://keploy.io/install.sh && source install.sh
+```
+
+Once installed, you should see an output similar to the following:
+
+<Image 
+    src="/blogs/keploy-cli.png"
+    alt="Keploy CLI"
+    width={800}
+    height={400}
+/>
+
+
+
+🎉 Congratulations! You’re all set to use Keploy.
+
+### Docker Installation
+
+For macOS and Windows, use Docker as native eBPF support is unavailable.
+
+#### Steps for macOS
+
+1. Open a terminal.
+2. Create a bridge network in Docker:
+
+   ```bash
+   docker network create keploy-network
+   ```
+
+3. Run the Keploy container:
+
+   ```bash
+   alias keploy="docker run --name keploy-v2 -p 16789:16789 --network keploy-network --privileged --pid=host -v $(pwd):$(pwd) -w $(pwd) -v /sys/fs/cgroup:/sys/fs/cgroup -v /sys/kernel/debug:/sys/kernel/debug -v /sys/bpf:/sys/bpf -v /var/run/docker.sock:/var/run/docker.sock --rm ghcr.io/keploy/keploy"
+   ```
+
+#### Steps for WSL/Linux AMD
+
+1. Open a terminal session.
+2. Download and install Keploy:
+
+   ```bash
+   curl --silent --location "https://github.com/keploy/keploy/releases/latest/download/keploy_linux_amd64.tar.gz" | tar xz --overwrite -C /tmp
+   sudo mkdir -p /usr/local/bin && sudo mv /tmp/keploy /usr/local/bin/keploy
+   ```
+
+#### Docker Desktop for WSL 2
+
+1. Install Docker Desktop for Windows [here](https://www.docker.com/products/docker-desktop/).
+2. Configure Docker Desktop to allow WSL 2 distributions to access the Docker daemon. Refer to the [official Docker documentation](https://docs.docker.com/desktop/windows/wsl/).
+
+### Other Installation Methods
+
+#### Using Arkade
+
+1. Install Arkade:
+
+   ```bash
+   curl -sLS https://get.arkade.dev | sudo sh
+   ```
+
+2. Install Keploy:
+
+   ```bash
+   arkade get keploy
+   ```
+
+3. To download a specific version:
+
+   ```bash
+   arkade get keploy@<version>
+   ```
+
+---
+
+## Real-World Integration: Testing a Next.js CRUD Application
+
+### Setting Up the Next.js Project
+
+To demonstrate Keploy’s capabilities, we’ll use a Next.js application as an example. This project will implement a simple CRUD (Create, Read, Update, Delete) functionality.
+
+#### Step 1: Initialize a Next.js Application
+
+Run the following command to create a new Next.js project:
+
+```bash
+npx create-next-app@latest keploy-crud-app
+```
+
+Follow the prompts to set up your application. Once complete, navigate to the project directory:
+
+```bash
+cd keploy-crud-app
+```
+
+#### Step 2: Install Required Dependencies
+
+Install the necessary dependencies for building a CRUD application:
+
+```bash
+npm install axios mongoose
+```
+
+#### Step 3: Set Up a Backend API
+
+Create a `pages/api` folder and add CRUD endpoints. For example, to handle a `users` resource:
+
+```javascript
+// pages/api/users.js
+import mongoose from 'mongoose';
+
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+});
+
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
+
+export default async function handler(req, res) {
+  mongoose.connect(process.env.MONGODB_URI);
+
+  if (req.method === 'GET') {
+    const users = await User.find();
+    res.status(200).json(users);
+  } else if (req.method === 'POST') {
+    const user = new User(req.body);
+    await user.save();
+    res.status(201).json(user);
+  } else {
+    res.status(405).end();
+  }
+}
+```
+
+#### Step 4: Add Environment Variables
+
+Create a `.env.local` file in the root directory and add your MongoDB URI:
+
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/<dbname>
+```
+
+#### Step 5: Start the Development Server
+
+Run the following command to start your application:
+
+```bash
+npm run dev
+```
+
+Your CRUD API is now live at `http://localhost:3000/api/users`.
+
+---
+
+### Integrating Keploy with the Next.js Application
+
+#### Step 1: Record API Calls
+
+Run your Next.js application with Keploy to start capturing API interactions. Use the following command:
+
+```bash
+keploy record -c "npm run dev"
+```
+
+#### Step 2: Replay Test Cases
+
+Once the API calls are recorded, you can replay them to test for regressions. Use this command:
+
+```bash
+keploy test -c "npm run dev" --delay 10
+```
+
+#### Step 3: Analyze Results
+
+Keploy will provide detailed test case results, highlighting any regressions introduced by code changes.
+
+---
+
+### How Keploy Saves Time and Effort
+
+#### Without Keploy:
+- Manual test case writing is required for each API endpoint.
+- Developers must handle mock data and test configurations manually.
+- Testing for regressions involves repetitive effort.
+
+#### With Keploy:
+- Automatically generates test cases from real API interactions.
+- Simplifies mock and stub management.
+- Enables quick and efficient regression testing.
+
+This automation reduces development overhead and ensures reliable API performance.
+
+---
+
+## Keploy Unit Test Generator
+
+Keploy's unit test generator (UTG) implementation of the Meta LLM research paper is the first to understand code semantics and generate meaningful unit tests. It aims to:
+
+- **Automate unit test generation (UTG):** Quickly generate comprehensive unit tests and reduce redundant manual effort.
+- **Improve edge cases:** Extend and improve the scope of tests to cover more complex scenarios that are often missed manually.
+- **Boost test coverage:** As the codebase grows, ensuring exhaustive coverage becomes feasible.
+
+### Usage
+
+```bash
+keploy gen [flag]
+```
+
+### Prerequisites
+
+An API key for the AI model is needed, which can be obtained from:
+
+- OpenAI's <a href="https://platform.openai.com/docs/overview" target="_blank">GPT-4</a> (preferred)
+- Alternative LLMs via <a href="https://platform.openai.com/docs/overview" target="_blank">litellm</a>
+- <a href = "https://azure.microsoft.com/en-in/products/ai-services/openai-service" target= "_blank"> Azure OpenAI</a> Services
+
+Set the API key as an environment variable:
+
+```bash
+export API_KEY=xxxx
+```
+
+### Running with JavaScript/TypeScript Applications
+
+To ensure the coverage report is in Cobertura format, modify your `package.json`:
+
+```json
+"jest": {
+  "coverageReporters": ["text", "cobertura"]
+}
+```
+
+Or, if `jest.config.js` is present:
+
+```javascript
+module.exports = {
+  coverageReporters: ["text", "cobertura"],
+};
+```
+
+#### Generating Unit Tests
+
+You can test a smaller section of the application or control costs by generating tests for a single source and its corresponding test file:
+
+```bash
+keploy gen --source-file-path="<path to source file>" \
+    --test-file-path="<path to test file for above source file>" \
+    --test-command="npm test" \
+    --coverage-report-path="<path to coverage.xml>"
+```
+
+For the entire application, use `--test-dir` instead of `--test-file-path`.
+
+> ⚠️ **Warning:** Running the command with `--test-dir` will generate unit tests for all files in the application. Depending on the size of the codebase, this process may take between 20 minutes to an hour and will incur costs related to LLM usage.
+
+#### Example
+
+Consider an <a href="https://github.com/keploy/samples-typescript/tree/main/express-mongoose" target="_blank">Express-Mongoose</a> sample application with Jest test cases under the `test` folder named `routes.test.js`. Modify the `package.json`:
+
+```json
+"jest": {
+  "collectCoverage": true,
+  "coverageReporters": ["text", "cobertura"],
+  "coverageDirectory": "./coverage"
+}
+```
+
+Run the Keploy UTG command:
+
+```bash
+keploy gen \
+  --source-file-path="./src/routes/routes.js" \
+  --test-file-path="./test/routes.test.js" \
+  --test-command="npm test" \
+  --coverage-report-path="./coverage/cobertura-coverage.xml"
+```
+
+We will get the following output:
+<Image 
+    src="/blogs/keploy-testcase-generation-1.png"
+    alt="Keploy test case generation"
+    width={800}
+    height={400}
+/>
+
+```plaintext
+Keploy test coverage with AI-generated unit tests for Express-Mongoose
+Voila!! The generated test cases provide 58% coverage🌟
+```
+
+### Running with Golang Applications
+
+To ensure Cobertura-formatted coverage reports, install:
+
+```bash
+go install github.com/axw/gocov/gocov@v1.1.0
+go install github.com/AlekSi/gocov-xml@v1.1.0
+```
+
+#### Generating Unit Tests
+
+Run the following command:
+
+```bash
+keploy gen --source-file-path="<path to source file>" \
+  --test-file-path="<path to test file for above source file>" \
+  --test-command="go test -v ./... -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
+  --coverage-report-path="<path to coverage.xml>"
+```
+
+For the entire application, use `--test-dir` instead of `--test-file-path`.
+
+⚠️ **Warning:** Running the command with `--test-dir` will generate unit tests for all files in the application. Depending on the size of the codebase, this process may take between 20 minutes to an hour and will incur costs related to LLM usage.
+
+#### Example
+
+Consider a Mux-SQL sample application with a test file `app_test.go` for the source file `app.go`:
+
+```bash
+keploy gen --source-file-path="app.go" \
+  --test-file-path="app_test.go" \
+  --test-command="go test -v ./... -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
+  --coverage-report-path="./coverage.xml"
+```
+
+
+
+--- 
+## Conclusion
+
+Keploy is a game-changing tool for developers looking to streamline API testing and unit test generation. By automating the creation of test cases, intercepting real-world API calls, and generating comprehensive coverage reports, Keploy dramatically reduces the manual overhead traditionally associated with software testing.
+
+With tools like [Keploy UTG](https://github.com/keploy/keploy), developers can achieve:
+
+- Higher **test coverage** with less effort.
+- Improved **test quality** by covering edge cases that are often missed.
+- A scalable, cost-effective testing process, regardless of codebase size.
+
+### Key Links
+
+- [Keploy Unit Test Generator](https://github.com/keploy/keploy)
+- [Getting Started with Keploy](https://keploy.io/docs/getting-started/)
+- [Keploy CLI Installation Guide](https://keploy.io/docs/cli/)
+
+By integrating Keploy into your development workflow, you can ensure robust API performance, reduce debugging time, and deliver high-quality applications faster.
