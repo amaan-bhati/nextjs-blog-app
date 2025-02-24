@@ -1,0 +1,259 @@
+---
+title: "Testing react applications in VS Code"
+description: "Learn best practices for testing React applications in Visual Studio Code, including setup, debugging, and automated testing strategies for more efficient development."
+image: "../../public/blogs/art-18.png"
+publishedAt: "2024-03-31"
+updatedAt: "2024-03-31"
+author: "amaanbhati"
+isPublished: false
+tags:
+- Testing
+- APIs
+---
+
+# React Testing in VS Code: A Comprehensive Guide
+
+## Creating the CRUD Application
+### Tech Stack
+- **React** for building UI components.
+- **TailwindCSS** (optional) for styling.
+- **JSON Server** for a mock API.
+
+### Features
+- **Create**: Add a new item.
+- **Read**: Display a list of items.
+- **Update**: Edit an existing item.
+- **Delete**: Remove an item.
+
+#### Setting Up the Project
+1. Initialize a React project:
+   ```bash
+   npx create-react-app react-testing-demo --template cra-template-pwa
+   cd react-testing-demo
+   ```
+2. Install dependencies:
+   ```bash
+   npm install tailwindcss json-server axios react-query
+   ```
+3. Configure TailwindCSS (if using):
+   ```bash
+   npx tailwindcss init
+   ```
+4. Set up `json-server` in `db.json`:
+   ```json
+   {
+     "items": [
+       { "id": 1, "name": "Item 1" },
+       { "id": 2, "name": "Item 2" }
+     ]
+   }
+   ```
+5. Run the mock API:
+   ```bash
+   npx json-server --watch db.json --port 3001
+   ```
+
+### Implementing CRUD Features
+#### Create
+```jsx
+import { useState } from 'react';
+import axios from 'axios';
+
+const AddItem = ({ onAdd }) => {
+  const [name, setName] = useState('');
+  
+  const addItem = async () => {
+    const res = await axios.post('http://localhost:3001/items', { name });
+    onAdd(res.data);
+  };
+  
+  return (
+    <div>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button onClick={addItem}>Add Item</button>
+    </div>
+  );
+};
+export default AddItem;
+```
+
+#### Read
+```jsx
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const ItemList = () => {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:3001/items').then((res) => setItems(res.data));
+  }, []);
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.id}>{item.name}</li>
+      ))}
+    </ul>
+  );
+};
+export default ItemList;
+```
+
+#### Update & Delete
+Implement `EditItem` and `DeleteItem` components similarly.
+
+## Testing the Application
+### Unit Testing with Jest & React Testing Library
+1. Install testing libraries:
+   ```bash
+   npm install --save-dev @testing-library/react jest
+   ```
+2. Write a test for `AddItem.js`:
+   ```jsx
+   import { render, fireEvent } from '@testing-library/react';
+   import AddItem from './AddItem';
+
+   test('adds a new item', () => {
+     const mockOnAdd = jest.fn();
+     const { getByText, getByRole } = render(<AddItem onAdd={mockOnAdd} />);
+
+     fireEvent.change(getByRole('textbox'), { target: { value: 'New Item' } });
+     fireEvent.click(getByText('Add Item'));
+
+     expect(mockOnAdd).toHaveBeenCalled();
+   });
+   ```
+
+### End-to-End UI Testing with Playwright
+1. Install Playwright:
+   ```bash
+   npm install --save-dev @playwright/test
+   ```
+2. Write a Playwright test:
+   ```js
+   import { test, expect } from '@playwright/test';
+
+   test('add an item', async ({ page }) => {
+     await page.goto('http://localhost:3000');
+     await page.fill('input', 'New Item');
+     await page.click('text=Add Item');
+     expect(await page.textContent('ul')).toContain('New Item');
+   });
+   ```
+
+### API Testing with Keploy
+1. Install Keploy:
+   ```bash
+   npm install --save-dev keploy
+   ```
+2. Record API calls:
+   ```bash
+   keploy record --app http://localhost:3001
+   ```
+3. Replay recorded requests for testing:
+   ```bash
+   keploy replay
+   ```
+
+### Automated Testing in VS Code with Keploy AI Extension
+Keploy AI provides an automated API testing solution directly integrated into VS Code, enabling a one-click approach to recording and replaying API interactions.
+
+#### Why Use Keploy AI Extension?
+- **Single-Click Automation**: Run complete API tests without manual scripting.
+- **Faster Testing Cycles**: Eliminates the need for writing complex API mocks.
+- **Seamless Integration**: Works directly within VS Code.
+- **Intelligent Test Case Generation**: Automatically records API calls as test cases.
+
+#### Installing Keploy AI Extension in VS Code
+1. Open VS Code and navigate to the Extensions Marketplace.
+2. Search for **Keploy AI** and click **Install**.
+3. Open the Command Palette (`Ctrl+Shift+P`) and type `Keploy: Start Recording`.
+
+#### Using Keploy AI for API Testing
+1. **Start Recording API Calls:**
+   - Run your React application and backend server.
+   - Click on **Keploy: Start Recording** in the VS Code extension panel.
+   - Perform API requests via your frontend application.
+2. **Generate Test Cases Automatically:**
+   - Keploy will capture all API requests and responses.
+   - The extension will generate JSON test cases.
+3. **Replay Tests with One Click:**
+   - Click **Keploy: Run Tests** to replay API calls.
+   - Ensure that API responses remain consistent.
+
+#### Benefits of Keploy AI Extension in VS Code
+- **Speeds up testing** by automating API validation.
+- **Reduces human errors** by generating test cases dynamically.
+- **Enhances debugging** with real-time request tracking.
+- **Simplifies API mocking** by eliminating manual mocks.
+
+
+## Debugging and Optimization in VS Code
+### Using VS Code Debugger
+1. Open VS Code, go to `Run and Debug`.
+2. Add a breakpoint in `AddItem.js`.
+3. Click `Start Debugging` to inspect the code.
+
+### Performance Optimization
+- Use **React.memo** for component optimization.
+- Use **lazy loading** with `React.lazy()`.
+- Optimize API calls with **React Query**.
+
+### Linting and Code Formatting
+1. Install ESLint and Prettier:
+   ```bash
+   npm install --save-dev eslint prettier eslint-plugin-react-hooks
+   ```
+2. Configure `.eslintrc.json`:
+   ```json
+   {
+     "extends": ["react-app", "plugin:react-hooks/recommended"]
+   }
+   ```
+
+## Deploying the Application
+### Deploying to Vercel
+1. Install Vercel CLI:
+   ```bash
+   npm install -g vercel
+   ```
+2. Deploy:
+   ```bash
+   vercel
+   ```
+
+### Setting Up CI/CD with GitHub Actions
+Create `.github/workflows/test.yml`:
+```yaml
+name: CI/CD
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+```
+
+## Conclusion
+- Testing improves application reliability and maintainability.
+- Use **Jest** for unit tests, **Playwright** for UI tests, and **Keploy** for API tests.
+- Debugging in VS Code streamlines development.
+- Deploying with Vercel and GitHub Actions ensures a smooth workflow.
+
+## FAQs
+1. **Why use Jest and React Testing Library?**
+   - They provide easy-to-use tools for testing React components.
+2. **What is Playwright used for?**
+   - It automates UI testing and simulates user interactions.
+3. **Why test APIs with Keploy?**
+   - It helps in recording, replaying, and validating API calls.
+4. **How to optimize React performance?**
+   - Use memoization, lazy loading, and React Query.
+5. **How to debug in VS Code?**
+   - Use breakpoints and the built-in debugger for efficient debugging.
+
