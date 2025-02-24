@@ -141,6 +141,21 @@ Implement `EditItem` and `DeleteItem` components similarly.
      expect(await page.textContent('ul')).toContain('New Item');
    });
    ```
+### End-to-End Testing with Keploy
+1. Install Keploy:
+   ```bash
+   curl -sSfL https://get.keploy.io | sh
+   ```
+2. Start Keploy in test mode:
+   ```bash
+   keploy test -c "npm start"
+   ```
+3. Generate test cases by running API requests via Postman or UI.
+4. Run Keploy tests to validate API responses:
+   ```bash
+   keploy replay
+   ```
+
 
 ### API Testing with Keploy
 1. Install Keploy:
